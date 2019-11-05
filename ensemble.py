@@ -22,7 +22,7 @@ plt.ylabel("Log(price)")
 plt.title("BTC - USD")
 plt.plot(serie)
 plt.savefig("btc-usd.png")
-plt.close()
+plt.close(1)
 
 
 plt.figure(2)
@@ -37,9 +37,9 @@ plt.xlabel("Weeks")
 plt.ylabel("Log(price)")
 plt.title("BTC - USD")
 plt.savefig("split.png")
-plt.close()
+plt.close(2)
 
-
+# print(len(treino),len(val), len(teste),len(serie.loc[475:]))
 
 
 def gerar_janelas(tam_janela, serie):
@@ -165,12 +165,13 @@ median_pred = np.median(predictions, axis=0)
 
 plt.figure(3)
 for pred in predictions:
-    plt.plot(pred,linewidth=0.7)
+    plt.plot(pred,linewidth=0.7,color='k')
 plt.plot(mean_pred,label="Mean")
 plt.plot(median_pred,label="Median")
 plt.legend()
+plt.savefig("best_10_pred.png")
 plt.show()
-plt.close()
+plt.close(3)
 
 
 plt.figure(4)
@@ -178,8 +179,11 @@ plt.plot(median_pred,label="Median",linewidth=1)
 plt.plot(mean_pred, label="Mean",linewidth=1)
 plt.plot(y_test,label = "Test",linewidth=1)
 plt.legend()
+plt.savefig("mean_median_pred.png")
 plt.show()
-plt.close()
+plt.close(4)
 
 print("MSE Test (Mean) = %s" %MSE(y_test, mean_pred))
 print("MSE Test (Median) = %s" %MSE(y_test, median_pred))
+print("MSE Mean and Median = %s" %MSE(mean_pred, median_pred))
+# print(len(x_train),len(x_val), len(x_test),len(serie.loc[475:]))

@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.neural_network import MLPRegressor
-#np.random.seed(0)
+np.random.seed(100)
 def gen_model_parameters(num_models):
     neuronios =  [1,2,3,5,10,20,50,100]
     func_activation =  ['tanh','relu', 'identity']
