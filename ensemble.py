@@ -7,6 +7,7 @@ from sklearn.metrics import mean_squared_error as MSE
 import statsmodels.api as sm
 import pandas as pd
 import seaborn as sns
+from mlp_models import gen_all_models, n_best_models
 sns.set()
 #####################################################################################################
 
@@ -15,14 +16,16 @@ data = data["Close"]
 data =  np.log(data)
 serie = data
 
-plt.figure()
+plt.figure(1)
 plt.xlabel("Weeks")
 plt.ylabel("Log(price)")
 plt.title("BTC - USD")
 plt.plot(serie)
 plt.savefig("btc-usd.png")
+plt.close()
 
-plt.figure()
+
+plt.figure(2)
 treino = serie.loc[:284]
 val = serie.loc[285:379]
 teste = serie.loc[380:474]
@@ -34,7 +37,8 @@ plt.xlabel("Weeks")
 plt.ylabel("Log(price)")
 plt.title("BTC - USD")
 plt.savefig("split.png")
-plt.show()
+plt.close()
+
 
 
 
@@ -135,67 +139,51 @@ serie_janelas = gerar_janelas(tam_janela, serie)
 x_train, y_train, x_test, y_test, x_val, y_val = split_serie_with_lags(serie_janelas, 0.6,
  perc_val = 0.2)
 
-# def treinar_mlp(x_train, y_train, x_val, y_val,num_exec):
+models = gen_all_models(20)
+lags = len(x_train[0])
+
+mse_list = []
+for model in models:
+    model.fit(x_train[:,-lags:], y_train)
+    predict_validation = model.predict(x_val[:,-lags:])
+    mse = MSE(y_val, predict_validation)
+    mse_list.append(mse)
+mse_list = np.array(mse_list)
+
+best_mse_ind = mse_list.argsort()[:10]
+best_10 = n_best_models(models,best_mse_ind)
+print(best_10)
 
 
-#     neuronios =  [1,2,3,5,10]  #[1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 170, 200]
-#     func_activation =  ['tanh','relu']#['tanh']   #['identity', 'tanh', 'relu']
-#     alg_treinamento = ['lbfgs','adam','sgd']#, 'sgd', 'adam']
-#     max_iteracoes = [10000] #[100, 1000, 10000]
-#     learning_rate = ['constant','adaptive']  #['constant', 'invscaling', 'adaptive']
-#     qtd_lags_sel = len(x_train[0])
-#     best_result = np.Inf
-#     for i in range(0,len(neuronios)):
-#         for j in range(0,len(func_activation)):
-#             for l in range(0,len(alg_treinamento)):
-#                 for m in range(0,len(max_iteracoes)):
-#                     for n in range(0,len(learning_rate)):
-#                         for qtd_lag in range(1, len(x_train[0])+1):
-#                         #variar a qtd de pontos utilizados na janela
-
-#                             print('QTD de Lags:', qtd_lag, 'Qtd de Neuronios' ,neuronios[i],
-#                              'Func. Act', func_activation[j])
 
 
-#                             for e in range(0,num_exec):
-#                                 mlp = MLPRegressor(hidden_layer_sizes=neuronios[i],
-#                                  activation=func_activation[j], solver=alg_treinamento[l],
-#                                   max_iter = max_iteracoes[m], learning_rate= learning_rate[n])
 
 
-#                                 mlp.fit(x_train[:,-qtd_lag:], y_train)
-#                                 predict_validation = mlp.predict(x_val[:,-qtd_lag:])
-#                                 mse = MSE(y_val, predict_validation)
-
-#                                 if mse < best_result:
-#                                     best_result = mse
-#                                     print('Melhor MSE:', best_result)
-#                                     select_model = mlp
-#                                     qtd_lags_sel = qtd_lag
 
 
-#     return select_model, qtd_lags_sel
 
-# modelo, lag_sel = treinar_mlp(x_train, y_train, x_val, y_val,10)
-
-# predict_train = modelo.predict(x_train[:, -lag_sel:])
-# predict_val = modelo.predict(x_val[:, -lag_sel:])
-# predict_test = modelo.predict(x_test[:, -lag_sel:])
+# predict_train = modelo.predict(x_train[:, -lags:])
+# predict_val = modelo.predict(x_val[:, -lags:])
+# predict_test = modelo.predict(x_test[:, -lags:])
 
 # previsoes_train = np.hstack(( predict_train, predict_val))
 # target_train = np.hstack((y_train, y_val))
 
+# plt.figure(3)
 # plt.plot(previsoes_train, label = 'Forecast: Train + Validation')
 # plt.plot(target_train, label='Train + Validation')
 # plt.legend(loc='best')
-# plt.show()
+# plt.show(3)
+# plt.close()
 
+# plt.figure(4)
 # plt.plot(predict_test, label = 'Forecast Test')
 # plt.plot(y_test, label='Test')
 # plt.legend(loc='best')
-# plt.show()
+# plt.show(4)
+# plt.close()
 
-# print("RMSE treinamento = %s" %np.sqrt(MSE(previsoes_train,target_train)))
-# print("RMSE Teste = %s" %np.sqrt(MSE(y_test, predict_test)))
+# print("MSE treinamento = %s" %MSE(previsoes_train,target_train))
+# print("MSE Teste = %s" %MSE(y_test, predict_test))
 # print(modelo)
 # print(len(predict_test))
