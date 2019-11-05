@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error as MSE
 import statsmodels.api as sm
 import pandas as pd
 import seaborn as sns
-from mlp_models import gen_all_models, n_best_models
+from mlp_models import *
 sns.set()
 #####################################################################################################
 
@@ -148,42 +148,38 @@ for model in models:
     predict_validation = model.predict(x_val[:,-lags:])
     mse = MSE(y_val, predict_validation)
     mse_list.append(mse)
+
 mse_list = np.array(mse_list)
-
 best_mse_ind = mse_list.argsort()[:10]
+
+
 best_10 = n_best_models(models,best_mse_ind)
-print(best_10)
+
+predictions = []
+for model in best_10:
+    predict_test = model.predict(x_test[:, -lags:])
+    predictions.append(predict_test)
+
+mean_pred = np.mean(predictions, axis=0)
+median_pred = np.median(predictions, axis=0)
+
+plt.figure(3)
+for pred in predictions:
+    plt.plot(pred,linewidth=0.7)
+plt.plot(mean_pred,label="Mean")
+plt.plot(median_pred,label="Median")
+plt.legend()
+plt.show()
+plt.close()
 
 
+plt.figure(4)
+plt.plot(median_pred,label="Median",linewidth=1)
+plt.plot(mean_pred, label="Mean",linewidth=1)
+plt.plot(y_test,label = "Test",linewidth=1)
+plt.legend()
+plt.show()
+plt.close()
 
-
-
-
-
-
-
-# predict_train = modelo.predict(x_train[:, -lags:])
-# predict_val = modelo.predict(x_val[:, -lags:])
-# predict_test = modelo.predict(x_test[:, -lags:])
-
-# previsoes_train = np.hstack(( predict_train, predict_val))
-# target_train = np.hstack((y_train, y_val))
-
-# plt.figure(3)
-# plt.plot(previsoes_train, label = 'Forecast: Train + Validation')
-# plt.plot(target_train, label='Train + Validation')
-# plt.legend(loc='best')
-# plt.show(3)
-# plt.close()
-
-# plt.figure(4)
-# plt.plot(predict_test, label = 'Forecast Test')
-# plt.plot(y_test, label='Test')
-# plt.legend(loc='best')
-# plt.show(4)
-# plt.close()
-
-# print("MSE treinamento = %s" %MSE(previsoes_train,target_train))
-# print("MSE Teste = %s" %MSE(y_test, predict_test))
-# print(modelo)
-# print(len(predict_test))
+print("MSE Test (Mean) = %s" %MSE(y_test, mean_pred))
+print("MSE Test (Median) = %s" %MSE(y_test, median_pred))
